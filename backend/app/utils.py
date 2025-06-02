@@ -1,7 +1,8 @@
 from openai import OpenAI
 from datetime import datetime
-from app.models import SessionData, Interaction
+from app.models import SessionData, Interaction, sessions_table, interactions_table
 import uuid
+from app.db import database
 
 client = OpenAI()
 
@@ -77,3 +78,19 @@ def generate_feedback(question: str, answer: str) -> tuple[str, int]:
     except Exception as e:
         return f"Feedback error: {e}", 0
 
+async def create_session(session_id: str):
+    query = sessions_table.insert().values(id=session_id)
+    await database.execute(query)
+
+async def log_interaction(session_id: str, question: str, answer: str = None):
+    query = interactions_table.insert().values(
+        session_id=session_id,
+        question=question,
+        answer=answer,
+        timestamp=datetime.utcnow()
+    )
+    await database.execute(query)
+
+async def get_session_log(session_id: str):
+    query = interactions_table.select().where(interactions_table.c.session_id == session_id)
+    return await database.fetch_all(query)

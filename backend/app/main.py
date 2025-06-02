@@ -5,8 +5,11 @@ from app.utils import (
     generate_session_id,
     log_interaction,
     sessions,
-    generate_feedback
+    generate_feedback,
+    create_session,
+    get_session_log
 )
+from app.db import database
 
 app = FastAPI()
 
@@ -15,18 +18,20 @@ def root():
     return {"message": "AI Interview Simulator is running 🚀"}
 
 @app.post("/interview/question")
-def get_question(req: InterviewRequest):
+async def get_question(req: InterviewRequest):
     session_id = req.session_id or generate_session_id()
     question = generate_interview_question(req.topic, req.difficulty)
-    log_interaction(session_id, question)
+
+    if not req.session_id:
+        await create_session(session_id)
+
+    await log_interaction(session_id, question)
     return {"question": question, "session_id": session_id}
 
 @app.get("/session/{session_id}")
-def get_session_log(session_id: str):
-    session = sessions.get(session_id)
-    if not session:
-        return {"error": "Session not found"}
-    return session
+async def get_session_log_route(session_id: str):
+    records = await get_session_log(session_id)
+    return {"session_id": session_id, "interactions": records}
 
 @app.post("/interview/feedback")
 def give_feedback(req: FeedbackRequest):
@@ -45,4 +50,13 @@ def give_feedback(req: FeedbackRequest):
         "feedback": feedback,
         "score": score
     }
+
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
 

@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15
+    container_name: interview-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: interviews
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: interview-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    environment:
+      - PYTHONPATH=/app
+
+volumes:
+  pgdata:
+
