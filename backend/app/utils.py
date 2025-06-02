@@ -1,7 +1,25 @@
 from openai import OpenAI
-import os
+from datetime import datetime
+from app.models import SessionData, Interaction
+import uuid
 
 client = OpenAI()
+
+# In-memory session store
+sessions = {}
+
+def generate_session_id() -> str:
+    return str(uuid.uuid4())
+
+def log_interaction(session_id: str, question: str, answer: str = None):
+    interaction = Interaction(
+        question=question,
+        answer=answer,
+        timestamp=datetime.utcnow()
+    )
+    if session_id not in sessions:
+        sessions[session_id] = SessionData(session_id=session_id, interactions=[])
+    sessions[session_id].interactions.append(interaction)
 
 def generate_interview_question(topic: str, difficulty: str) -> str:
     try:
@@ -9,8 +27,8 @@ def generate_interview_question(topic: str, difficulty: str) -> str:
             model="gpt-3.5-turbo",
             messages=[
                 {
-                     "role": "system",
-                     "content": f"You are a technical interviewer. Ask a {difficulty} question about {topic}."
+                    "role": "system",
+                    "content": f"You are a technical interviewer. Ask a {difficulty} question about {topic}."
                 },
                 {
                     "role": "user",
@@ -19,5 +37,6 @@ def generate_interview_question(topic: str, difficulty: str) -> str:
             ]
         )
         return response.choices[0].message.content.strip()
-    except RateLimitError:
-        return "Error: OpenAI API quote exceeded. Please check your API key builling status."
+    except Exception as e:
+        return f"Error: {e}"
+
