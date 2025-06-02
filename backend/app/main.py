@@ -1,10 +1,11 @@
-from fastapi import FastAPI
-from app.models import InterviewRequest
+from fastapi import FastAPI, HTTPException
+from app.models import InterviewRequest, SessionData, FeedbackRequest
 from app.utils import (
     generate_interview_question,
     generate_session_id,
     log_interaction,
-    sessions
+    sessions,
+    generate_feedback
 )
 
 app = FastAPI()
@@ -26,4 +27,22 @@ def get_session_log(session_id: str):
     if not session:
         return {"error": "Session not found"}
     return session
+
+@app.post("/interview/feedback")
+def give_feedback(req: FeedbackRequest):
+    session = sessions.get(req.session_id)
+    if not session or not session.interactions:
+        raise HTTPException(status_code=404, detail="Session not found or has no questions")
+    
+    last_interaction = session.interactions[-1]
+    last_interaction.answer = req.answer
+    
+    feedback, score = generate_feedback(last_interaction.question, req.answer)
+    last_interaction.feedback = feedback
+    last_interaction.score = score
+    
+    return {
+        "feedback": feedback,
+        "score": score
+    }
 
