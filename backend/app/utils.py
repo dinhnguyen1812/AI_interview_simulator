@@ -90,7 +90,3 @@ async def log_interaction(session_id: str, question: str, answer: str = None):
         timestamp=datetime.utcnow()
     )
     await database.execute(query)
-
-async def get_session_log(session_id: str):
-    query = interactions_table.select().where(interactions_table.c.session_id == session_id)
-    return await database.fetch_all(query)

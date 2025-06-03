@@ -1,13 +1,14 @@
 from fastapi import FastAPI, HTTPException
-from app.models import InterviewRequest, SessionData, FeedbackRequest
+from app.models import InterviewRequest, FeedbackRequest
+from fastapi import Query
+# from typing import Optional
+from app.models import interactions_table
 from app.utils import (
     generate_interview_question,
     generate_session_id,
     log_interaction,
-    sessions,
     generate_feedback,
-    create_session,
-    get_session_log
+    create_session
 )
 from app.db import database
 
@@ -29,27 +30,68 @@ async def get_question(req: InterviewRequest):
     return {"question": question, "session_id": session_id}
 
 @app.get("/session/{session_id}")
-async def get_session_log_route(session_id: str):
-    records = await get_session_log(session_id)
-    return {"session_id": session_id, "interactions": records}
+async def get_session_log_route(
+    session_id: str,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100)
+):
+    query = (
+        interactions_table
+        .select()
+        .where(interactions_table.c.session_id == session_id)
+        .order_by(interactions_table.c.timestamp.asc())
+        .offset(skip)
+        .limit(limit)
+    )
+    records = await database.fetch_all(query)
+
+    interactions = [
+        {
+            "question": r["question"],
+            "answer": r["answer"],
+            "feedback": r["feedback"],
+            "score": r["score"],
+            "timestamp": r["timestamp"].isoformat() if r["timestamp"] else None,
+        }
+        for r in records
+    ]
+
+    return {
+        "session_id": session_id,
+        "interactions": interactions,
+        "pagination": {
+            "skip": skip,
+            "limit": limit,
+            "count": len(interactions)
+        }
+    }
 
 @app.post("/interview/feedback")
-def give_feedback(req: FeedbackRequest):
-    session = sessions.get(req.session_id)
-    if not session or not session.interactions:
-        raise HTTPException(status_code=404, detail="Session not found or has no questions")
+async def give_feedback(req: FeedbackRequest):
+    # Fetch last interaction for session
+    query = interactions_table.select().where(
+        interactions_table.c.session_id == req.session_id
+    ).order_by(interactions_table.c.timestamp.desc()).limit(1)
     
-    last_interaction = session.interactions[-1]
-    last_interaction.answer = req.answer
+    last_interaction = await database.fetch_one(query)
     
+    if not last_interaction:
+        raise HTTPException(status_code=404, detail="No questions found for session")
+
+    # Generate feedback and score
     feedback, score = generate_feedback(last_interaction.question, req.answer)
-    last_interaction.feedback = feedback
-    last_interaction.score = score
-    
-    return {
-        "feedback": feedback,
-        "score": score
-    }
+
+    # Update the last interaction with answer, feedback, score
+    update_query = interactions_table.update().where(
+        interactions_table.c.id == last_interaction.id
+    ).values(
+        answer=req.answer,
+        feedback=feedback,
+        score=score
+    )
+    await database.execute(update_query)
+
+    return {"feedback": feedback, "score": score}
 
 @app.on_event("startup")
 async def startup():

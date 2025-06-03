@@ -3,7 +3,6 @@ from typing import List, Optional
 from datetime import datetime
 from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey, Text
 from app.db import metadata
-from datetime import datetime
 
 class InterviewRequest(BaseModel):
     topic: str
