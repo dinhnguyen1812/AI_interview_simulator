@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Interview Simulator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h1>AI Interview Simulator</h1>
+  <div>
+    <label>Topic:</label>
+    <input id="topic" placeholder="e.g. Python" />
+    <label>Difficulty:</label>
+    <select id="difficulty">
+      <option value="easy">Easy</option>
+      <option value="medium" selected>Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+    <button onclick="startSession()">Start</button>
+  </div>
+
+  <div id="session" style="margin-top: 20px;"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
