@@ -41,3 +41,10 @@ interactions_table = Table(
     Column("score", Integer),
     Column("timestamp", DateTime, default=datetime.utcnow),
 )
+
+users_table = Table(
+    "users", metadata,
+    Column("id", Integer, primary_key=True),
+    Column("email", String, unique=True, index=True),
+    Column("password", String),
+)

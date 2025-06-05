@@ -1,8 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query, Depends, Response
 from app.models import InterviewRequest, FeedbackRequest
-from fastapi import Query
-# from typing import Optional
-from app.models import interactions_table
+from app.models import interactions_table, users_table
+from app.auth import manager
 from app.utils import (
     generate_interview_question,
     generate_session_id,
@@ -12,6 +11,8 @@ from app.utils import (
 )
 from app.db import database
 from fastapi.middleware.cors import CORSMiddleware
+from passlib.hash import bcrypt
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -28,7 +29,7 @@ def root():
     return {"message": "AI Interview Simulator is running 🚀"}
 
 @app.post("/interview/question")
-async def get_question(req: InterviewRequest):
+async def get_question(req: InterviewRequest, user=Depends(manager)):
     session_id = req.session_id or generate_session_id()
     question = generate_interview_question(req.topic, req.difficulty)
 
@@ -42,7 +43,8 @@ async def get_question(req: InterviewRequest):
 async def get_session_log_route(
     session_id: str,
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100)
+    limit: int = Query(20, ge=1, le=100),
+    user=Depends(manager)
 ):
     query = (
         interactions_table
@@ -76,7 +78,7 @@ async def get_session_log_route(
     }
 
 @app.post("/interview/feedback")
-async def give_feedback(req: FeedbackRequest):
+async def give_feedback(req: FeedbackRequest, user=Depends(manager)):
     # Fetch last interaction for session
     query = interactions_table.select().where(
         interactions_table.c.session_id == req.session_id
@@ -110,4 +112,27 @@ async def startup():
 async def shutdown():
     await database.disconnect()
 
+class UserIn(BaseModel):
+    email: str
+    password: str
 
+@app.post("/auth/register")
+async def register(user: UserIn):
+    query = users_table.select().where(users_table.c.email == user.email)
+    if await database.fetch_one(query):
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    hashed_pw = bcrypt.hash(user.password)
+    await database.execute(users_table.insert().values(email=user.email, password=hashed_pw))
+    return {"msg": "User registered"}
+
+@app.post("/auth/login")
+async def login(response: Response, user: UserIn):
+    query = users_table.select().where(users_table.c.email == user.email)
+    db_user = await database.fetch_one(query)
+    if not db_user or not bcrypt.verify(user.password, db_user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = manager.create_access_token(data={"sub": user.email})
+    manager.set_cookie(response, token)
+    return {"msg": "Login successful"}
