@@ -5,6 +5,8 @@ import uuid
 from app.db import database
 from typing import Optional
 
+import re
+
 client = OpenAI()
 
 # In-memory session store
@@ -23,26 +25,50 @@ def log_interaction(session_id: str, question: str, answer: str = None):
         sessions[session_id] = SessionData(session_id=session_id, interactions=[])
     sessions[session_id].interactions.append(interaction)
 
-def generate_interview_question(topic: str, difficulty: str) -> str:
+async def generate_interview_question(
+    role: str,
+    experience: str,
+    tech_stack: str,
+    difficulty: str,
+    last_answer: str = None
+) -> str:
     try:
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    f"You are a professional technical interviewer. "
+                    f"Generate a {difficulty} interview question for a {role} "
+                    f"with {experience} of experience using {tech_stack}."
+                )
+            }
+        ]
+
+        if last_answer:
+            messages.append({
+                "role": "user",
+                "content": (
+                    f"The candidate just gave this answer: {last_answer}. "
+                    f"Please ask a follow-up question related to it, but not repeating the last one."
+                )
+            })
+        else:
+            messages.append({
+                "role": "user",
+                "content": (
+                    f"Please ask a {difficulty} interview question for a {role} with {experience} "
+                    f"experience using {tech_stack}."
+                )
+            })
+
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {
-                    "role": "system",
-                    "content": f"You are a technical interviewer. Ask a {difficulty} question about {topic}."
-                },
-                {
-                    "role": "user",
-                    "content": f"Please ask me a {difficulty} interview question on {topic}."
-                }
-            ]
+            messages=messages
         )
+
         return response.choices[0].message.content.strip()
     except Exception as e:
-        return f"Error: {e}"
-
-import re
+        return f"Error generating question: {e}"
 
 def generate_feedback(question: str, answer: str) -> tuple[str, int]:
     try:

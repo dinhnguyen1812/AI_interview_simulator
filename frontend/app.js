@@ -1,25 +1,26 @@
 let sessionId = null;
 
 async function startSession() {
-  const topic = document.getElementById('topic').value;
-  const difficulty = document.getElementById('difficulty').value;
+  const role = document.getElementById("role").value;
+  const experience = document.getElementById("experience").value;
+  const tech_stack = document.getElementById("tech_stack").value;
+  const difficulty = document.getElementById("difficulty").value;
 
   const res = await fetch("http://localhost:8000/interview/question", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include", // add this if auth cookies/session are used
-    body: JSON.stringify({ topic, difficulty }),
+    body: JSON.stringify({
+      role,
+      experience,
+      tech_stack,
+      difficulty
+    })
   });
-
-  if (!res.ok) {
-    alert("Failed to start session");
-    return;
-  }
 
   const data = await res.json();
   sessionId = data.session_id;
 
-  document.getElementById('session').innerHTML = `
+  document.getElementById("session").innerHTML = `
     <p><strong>Question:</strong> ${data.question}</p>
     <textarea id="answer" rows="4" cols="60" placeholder="Your answer here..."></textarea><br />
     <button onclick="submitAnswer()">Submit Answer</button>
@@ -28,6 +29,7 @@ async function startSession() {
   // Reload session history immediately after new session starts
   loadSessionHistory();
 }
+
 
 async function submitAnswer() {
   const answer = document.getElementById('answer').value;

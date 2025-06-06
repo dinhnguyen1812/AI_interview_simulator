@@ -1,22 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Interview Simulator</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    input::placeholder,
+    textarea::placeholder {
+      color: #aaa;  /* softer gray for placeholder */
+      opacity: 1;   /* consistent appearance across browsers */
+    }
+  </style>
+</head>
 <body>
   <h1>AI Interview Simulator</h1>
 
-  <div id="main-container" style="display: flex; align-items: flex-start;">
+  <div id="main-container" style="display: flex; align-items: flex-start; gap: 40px; padding: 20px;">
     <!-- Left side: input + session -->
-    <div id="left-panel" style="flex: 2; padding-right: 20px;">
-      <div>
-        <label>Topic:</label>
-        <input id="topic" placeholder="e.g. Python" />
-        <label>Difficulty:</label>
-        <select id="difficulty">
-          <option value="easy">Easy</option>
-          <option value="medium" selected>Medium</option>
-          <option value="hard">Hard</option>
-        </select>
-        <button onclick="startSession()">Start</button>
+    <div id="left-panel" style="flex: 2;">
+      <!-- Input form -->
+      <div style="display: flex; flex-direction: column; gap: 10px; max-width: 500px;">
+        <div>
+          <label for="role"><strong>Role:</strong></label><br />
+          <select id="role" style="width: 100%;">
+            <option value="Backend Engineer">Backend Engineer</option>
+            <option value="Frontend Engineer">Frontend Engineer</option>
+            <option value="Data Scientist">Data Scientist</option>
+            <option value="MLOps Engineer">MLOps Engineer</option>
+            <option value="DevOps Engineer">DevOps Engineer</option>
+            <option value="Fullstack Developer">Fullstack Developer</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="experience"><strong>Experience:</strong></label><br />
+          <select id="experience" style="width: 100%;">
+            <option value="0-1 year">0–1 year</option>
+            <option value="2-3 years">2–3 years</option>
+            <option value="4-6 years">4–6 years</option>
+            <option value="7+ years">7+ years</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="tech_stack"><strong>Tech Stack:</strong></label><br />
+          <input id="tech_stack" placeholder="e.g. Python, Docker, PostgreSQL" style="width: 100%;" />
+        </div>
+
+        <div>
+          <label for="difficulty"><strong>Difficulty:</strong></label><br />
+          <select id="difficulty" style="width: 100%;">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+
+        <button onclick="startSession()" style="margin-top: 10px;">Start</button>
       </div>
 
-      <div id="session" style="margin-top: 20px;"></div>
+      <!-- Session output -->
+      <div id="session" style="margin-top: 30px;"></div>
     </div>
 
     <!-- Right side: session history -->

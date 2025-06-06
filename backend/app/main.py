@@ -39,12 +39,30 @@ def root():
 @app.post("/interview/question")
 async def get_question(req: InterviewRequest, user=Depends(manager)):
     session_id = req.session_id or generate_session_id()
-    question = generate_interview_question(req.topic, req.difficulty)
 
+    # Create session if not exists
     if not req.session_id:
-        await create_session(session_id, user.email)  # ← pass email here
+        await create_session(session_id, user.email)
+
+    # Get last answer if any
+    query = interactions_table.select().where(
+        interactions_table.c.session_id == session_id
+    ).order_by(interactions_table.c.timestamp.desc()).limit(1)
+
+    last_interaction = await database.fetch_one(query)
+    last_answer = last_interaction["answer"] if last_interaction else None
+
+    # Generate question with context
+    question = await generate_interview_question(
+        role=req.role,
+        experience=req.experience,
+        tech_stack=req.tech_stack,
+        difficulty=req.difficulty,
+        last_answer=last_answer
+    )
 
     await log_interaction(session_id, question)
+
     return {"question": question, "session_id": session_id}
 
 @app.get("/session/{session_id}")

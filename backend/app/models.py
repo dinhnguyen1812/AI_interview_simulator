@@ -6,8 +6,10 @@ from app.db import metadata
 from sqlalchemy.sql import func
 
 class InterviewRequest(BaseModel):
-    topic: str
-    difficulty: str = "medium"
+    role: str
+    experience: str
+    tech_stack: str
+    difficulty: str
     session_id: Optional[str] = None
 
 class Interaction(BaseModel):
