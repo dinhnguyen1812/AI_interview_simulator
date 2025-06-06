@@ -72,3 +72,54 @@ if (loginForm) {
       : "Login failed.";
   });
 }
+
+// Show logged-in user email at top right if logged in
+async function showUserEmail() {
+  try {
+    const res = await fetch("/auth/user", {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Not logged in");
+    const data = await res.json();
+
+    // Create or update user email display element
+    let userElem = document.getElementById("user-email");
+    if (!userElem) {
+      userElem = document.createElement("div");
+      userElem.id = "user-email";
+      userElem.style.position = "fixed";
+      userElem.style.top = "10px";
+      userElem.style.right = "10px";
+      userElem.style.backgroundColor = "#eee";
+      userElem.style.padding = "5px 10px";
+      userElem.style.borderRadius = "5px";
+      document.body.appendChild(userElem);
+    }
+    userElem.textContent = `Logged in as: ${data.email}`;
+
+    // Add logout button next to email
+    let logoutBtn = document.getElementById("logout-btn");
+    if (!logoutBtn) {
+      logoutBtn = document.createElement("button");
+      logoutBtn.id = "logout-btn";
+      logoutBtn.textContent = "Logout";
+      logoutBtn.style.marginLeft = "10px";
+      logoutBtn.onclick = async () => {
+        await fetch("/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+        // Redirect to login page after logout
+        window.location.href = "/static/login.html";
+      };
+      userElem.appendChild(logoutBtn);
+    }
+  } catch {
+    // No logged in user, do nothing
+  }
+}
+
+// Call on page load
+if (window.location.pathname.endsWith("index.html") || window.location.pathname === "/") {
+  showUserEmail();
+}

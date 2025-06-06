@@ -140,3 +140,17 @@ async def login(response: Response, user: UserIn):
     token = manager.create_access_token(data={"sub": user.email})
     manager.set_cookie(response, token)
     return {"msg": "Login successful"}
+
+# Logout endpoint — clear the cookie
+@app.post("/auth/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key=manager.cookie_name,      # Typically 'access-token'
+        path="/",                     # Must match the login path
+    )
+    return {"message": "Logged out"}
+
+# Get current user info endpoint
+@app.get("/auth/user")
+def get_current_user(user=Depends(manager)):
+    return {"email": user.email}
