@@ -48,9 +48,12 @@ if (registerForm) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    document.getElementById("register-msg").innerText = res.ok
-      ? "Registered successfully!"
-      : "Registration failed.";
+    if (res.ok) {
+      // ✅ Redirect after successful registration
+      window.location.href = "/static/login.html";
+    } else {
+      document.getElementById("register-msg").innerText = "Registration failed.";
+    }
   });
 }
 
@@ -67,14 +70,22 @@ if (loginForm) {
       credentials: "include", // <-- Important for cookie
       body: JSON.stringify({ email, password }),
     });
-    document.getElementById("login-msg").innerText = res.ok
-      ? "Logged in successfully!"
-      : "Login failed.";
+    if (res.ok) {
+      // ✅ Redirect to homepage
+      window.location.href = "/static/index.html";
+    } else {
+      document.getElementById("login-msg").innerText = "Login failed.";
+    }
   });
 }
 
 // Show logged-in user email at top right if logged in
 async function showUserEmail() {
+  const path = window.location.pathname;
+
+  // Skip on login or register pages
+  if (path.includes("login.html") || path.includes("register.html")) return;
+
   try {
     const res = await fetch("/auth/user", {
       credentials: "include",
@@ -97,7 +108,7 @@ async function showUserEmail() {
     }
     userElem.textContent = `Logged in as: ${data.email}`;
 
-    // Add logout button next to email
+    // Add logout button
     let logoutBtn = document.getElementById("logout-btn");
     if (!logoutBtn) {
       logoutBtn = document.createElement("button");
@@ -109,17 +120,18 @@ async function showUserEmail() {
           method: "POST",
           credentials: "include",
         });
-        // Redirect to login page after logout
+        // Redirect after logout
         window.location.href = "/static/login.html";
       };
       userElem.appendChild(logoutBtn);
     }
   } catch {
-    // No logged in user, do nothing
+    // If on index page and not logged in, redirect to login
+    if (path.endsWith("index.html") || path === "/") {
+      window.location.href = "/static/login.html";
+    }
   }
 }
 
-// Call on page load
-if (window.location.pathname.endsWith("index.html") || window.location.pathname === "/") {
-  showUserEmail();
-}
+// Always call on page load
+showUserEmail();
