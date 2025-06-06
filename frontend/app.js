@@ -36,3 +36,39 @@ async function submitAnswer() {
   `;
 }
 
+// Handle register form
+const registerForm = document.getElementById("register-form");
+if (registerForm) {
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const res = await fetch("http://localhost:8000/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    document.getElementById("register-msg").innerText = res.ok
+      ? "Registered successfully!"
+      : "Registration failed.";
+  });
+}
+
+// Handle login form
+const loginForm = document.getElementById("login-form");
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const res = await fetch("http://localhost:8000/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // <-- Important for cookie
+      body: JSON.stringify({ email, password }),
+    });
+    document.getElementById("login-msg").innerText = res.ok
+      ? "Logged in successfully!"
+      : "Login failed.";
+  });
+}
