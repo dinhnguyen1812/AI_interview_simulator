@@ -2,3 +2,15 @@
 Register: http://localhost:8080/register.html
 Login: http://localhost:8080/login.html
 Main: http://localhost:8080
+
+** 250606: For Day 9 - 2:
+Register: http://localhost:8000/static/register.html
+Login: http://localhost:8000/static/login.html
+Main: http://localhost:8000/static/index.html
+
+i think it lacks:
+- add logout
+- show user email in the screen
+- login required for endpoints like / (and others), automatically redirects to login if trying to access to the endpoints while not authenticated
+- register automatically redirects to login page after success register
+- session history should belong to an user

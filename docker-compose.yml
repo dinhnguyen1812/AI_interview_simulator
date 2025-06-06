@@ -27,7 +27,9 @@ services:
       - db
     environment:
       - PYTHONPATH=/app
+    volumes:
+      - ./backend:/app                  # Mount backend code
+      - ./frontend:/app/frontend        # Mount frontend folder for FastAPI to serve
 
 volumes:
   pgdata:
-

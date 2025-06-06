@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query, Depends, Response
+from fastapi.staticfiles import StaticFiles
 from app.models import InterviewRequest, FeedbackRequest
 from app.models import interactions_table, users_table
 from app.auth import manager
@@ -15,6 +16,9 @@ from passlib.hash import bcrypt
 from pydantic import BaseModel
 
 app = FastAPI()
+
+# Serve HTML from frontend directory
+app.mount("/static", StaticFiles(directory="frontend", html=True), name="frontend")
 
 app.add_middleware(
     CORSMiddleware,
