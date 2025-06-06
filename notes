@@ -9,7 +9,8 @@ Login: http://localhost:8000/static/login.html
 Main: http://localhost:8000/static/index.html
 
 i think it lacks:
-- User can view session details when clicking each session in the history
 - Adjust the prompt:
   - Not just topic, difficulty, need: role, experience, tech stack
+  - The question should not be the same as the last question, it should be related to the last answer.
 - Button for simulator to give advice to the user. The simulator should give the advice based on the interaction history.
+- Styling

@@ -155,7 +155,6 @@ async function loadSessionHistory() {
 
     const data = await res.json();
 
-    // Create container or use existing element in index.html
     let container = document.getElementById("session-history");
     if (!container) {
       container = document.createElement("div");
@@ -169,7 +168,6 @@ async function loadSessionHistory() {
       return;
     }
 
-    // Render session list
     container.innerHTML = "<h3>Your Previous Sessions</h3>";
     const list = document.createElement("ul");
     data.sessions.forEach(session => {
@@ -178,7 +176,12 @@ async function loadSessionHistory() {
         ? new Date(session.created_at).toLocaleString()
         : "unknown time";
 
-      li.textContent = `Session on ${timestamp}`;
+      const link = document.createElement("a");
+      link.href = "#";
+      link.textContent = `Session on ${timestamp}`;
+      link.onclick = () => loadSessionDetail(session.id);
+
+      li.appendChild(link);
       list.appendChild(li);
     });
     container.appendChild(list);
@@ -193,4 +196,41 @@ if (window.location.pathname.endsWith("index.html") || window.location.pathname 
   showUserEmail().then(() => {
     loadSessionHistory();
   });
+}
+
+async function loadSessionDetail(sessionId) {
+  try {
+    const res = await fetch(`/session/${sessionId}`, {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Failed to fetch session detail");
+
+    const data = await res.json();
+
+    const container = document.getElementById("session");
+    container.innerHTML = `<h3>Session Detail</h3>`;
+
+    if (!data.interactions || data.interactions.length === 0) {
+      container.innerHTML += `<p>No interactions found for this session.</p>`;
+      return;
+    }
+
+    const list = document.createElement("ol");
+    data.interactions.forEach(log => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <strong>Q:</strong> ${log.question}<br />
+        <strong>A:</strong> ${log.answer || "<em>No answer submitted</em>"}<br />
+        <strong>Score:</strong> ${log.score ?? "N/A"}<br />
+        <strong>Feedback:</strong> ${log.feedback ?? "No feedback"}<br />
+        <em>${new Date(log.timestamp).toLocaleString()}</em>
+      `;
+      list.appendChild(li);
+    });
+
+    container.appendChild(list);
+
+  } catch (err) {
+    console.error("Error loading session detail:", err);
+  }
 }
