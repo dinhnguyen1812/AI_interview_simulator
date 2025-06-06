@@ -3,6 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey, Text
 from app.db import metadata
+from sqlalchemy.sql import func
 
 class InterviewRequest(BaseModel):
     topic: str
@@ -28,6 +29,8 @@ sessions_table = Table(
     "sessions",
     metadata,
     Column("id", String, primary_key=True),
+    Column("user_email", String, ForeignKey("users.email")),
+    Column("created_at", DateTime, server_default=func.now()),
 )
 
 interactions_table = Table(

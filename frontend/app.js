@@ -7,8 +7,14 @@ async function startSession() {
   const res = await fetch("http://localhost:8000/interview/question", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include", // add this if auth cookies/session are used
     body: JSON.stringify({ topic, difficulty }),
   });
+
+  if (!res.ok) {
+    alert("Failed to start session");
+    return;
+  }
 
   const data = await res.json();
   sessionId = data.session_id;
@@ -18,6 +24,9 @@ async function startSession() {
     <textarea id="answer" rows="4" cols="60" placeholder="Your answer here..."></textarea><br />
     <button onclick="submitAnswer()">Submit Answer</button>
   `;
+
+  // Reload session history immediately after new session starts
+  loadSessionHistory();
 }
 
 async function submitAnswer() {
@@ -135,3 +144,53 @@ async function showUserEmail() {
 
 // Always call on page load
 showUserEmail();
+
+// Show session history of an user
+async function loadSessionHistory() {
+  try {
+    const res = await fetch("/user/session", {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Failed to fetch user session history");
+
+    const data = await res.json();
+
+    // Create container or use existing element in index.html
+    let container = document.getElementById("session-history");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "session-history";
+      container.style.marginTop = "20px";
+      document.body.appendChild(container);
+    }
+
+    if (data.sessions.length === 0) {
+      container.textContent = "No previous sessions found.";
+      return;
+    }
+
+    // Render session list
+    container.innerHTML = "<h3>Your Previous Sessions</h3>";
+    const list = document.createElement("ul");
+    data.sessions.forEach(session => {
+      const li = document.createElement("li");
+      const timestamp = session.created_at
+        ? new Date(session.created_at).toLocaleString()
+        : "unknown time";
+
+      li.textContent = `Session on ${timestamp}`;
+      list.appendChild(li);
+    });
+    container.appendChild(list);
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Call this after confirming user is logged in on index page
+if (window.location.pathname.endsWith("index.html") || window.location.pathname === "/") {
+  showUserEmail().then(() => {
+    loadSessionHistory();
+  });
+}

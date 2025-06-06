@@ -9,9 +9,7 @@ Login: http://localhost:8000/static/login.html
 Main: http://localhost:8000/static/index.html
 
 i think it lacks:
-- Redirecting:
-  - success register to login
-  - success login to index
-  - index to login if not loged in
-- register automatically redirects to login page after success register
-- session history should belong to an user
+- User can view session details when clicking each session in the history
+- Adjust the prompt:
+  - Not just topic, difficulty, need: role, experience, tech stack
+- Button for simulator to give advice to the user. The simulator should give the advice based on the interaction history.

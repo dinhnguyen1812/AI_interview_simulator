@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query, Depends, Response
 from fastapi.staticfiles import StaticFiles
 from app.models import InterviewRequest, FeedbackRequest
-from app.models import interactions_table, users_table
+from app.models import interactions_table, sessions_table, users_table
 from app.auth import manager
 from app.utils import (
     generate_interview_question,
@@ -14,6 +14,10 @@ from app.db import database
 from fastapi.middleware.cors import CORSMiddleware
 from passlib.hash import bcrypt
 from pydantic import BaseModel
+
+import logging
+
+logger = logging.getLogger("uvicorn")
 
 app = FastAPI()
 
@@ -38,7 +42,7 @@ async def get_question(req: InterviewRequest, user=Depends(manager)):
     question = generate_interview_question(req.topic, req.difficulty)
 
     if not req.session_id:
-        await create_session(session_id)
+        await create_session(session_id, user.email)  # ← pass email here
 
     await log_interaction(session_id, question)
     return {"question": question, "session_id": session_id}
@@ -154,3 +158,17 @@ def logout(response: Response):
 @app.get("/auth/user")
 def get_current_user(user=Depends(manager)):
     return {"email": user.email}
+
+@app.get("/user/session")
+async def get_session_history(user=Depends(manager)):
+    query = sessions_table.select().where(sessions_table.c.user_email == user.email)
+    sessions = await database.fetch_all(query)
+    
+    result = []
+    for s in sessions:
+        result.append({
+            "id": s["id"],
+            "user_email": s["user_email"],
+            "created_at": s["created_at"].isoformat() if s["created_at"] else None  # include timestamp
+        })
+    return {"sessions": result}

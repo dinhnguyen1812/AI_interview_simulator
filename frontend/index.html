@@ -1,27 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>AI Interview Simulator</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
 <body>
   <h1>AI Interview Simulator</h1>
-  <div>
-    <label>Topic:</label>
-    <input id="topic" placeholder="e.g. Python" />
-    <label>Difficulty:</label>
-    <select id="difficulty">
-      <option value="easy">Easy</option>
-      <option value="medium" selected>Medium</option>
-      <option value="hard">Hard</option>
-    </select>
-    <button onclick="startSession()">Start</button>
-  </div>
 
-  <div id="session" style="margin-top: 20px;"></div>
+  <div id="main-container" style="display: flex; align-items: flex-start;">
+    <!-- Left side: input + session -->
+    <div id="left-panel" style="flex: 2; padding-right: 20px;">
+      <div>
+        <label>Topic:</label>
+        <input id="topic" placeholder="e.g. Python" />
+        <label>Difficulty:</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+        <button onclick="startSession()">Start</button>
+      </div>
+
+      <div id="session" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- Right side: session history -->
+    <div id="session-history" style="flex: 1; border-left: 1px solid #ccc; padding-left: 20px;"></div>
+  </div>
 
   <script src="app.js"></script>
 </body>
-</html>
-

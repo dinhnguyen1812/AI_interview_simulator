@@ -1,5 +1,7 @@
 FROM python:3.9-slim
 
+ENV PYTHONUNBUFFERED=1
+
 # Install build tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
