@@ -1,29 +1,52 @@
-# 🤖 AI Interview Simulator
+# 🧠 AI Interview Simulator
 
-A full-stack application to help users practice technical interviews using AI. Built with **FastAPI**, **PostgreSQL**, **Docker Compose**, and will support a frontend soon.
+An AI-powered web app to simulate technical interviews, provide real-time feedback, and help users improve through personalized advice.
 
-> This is a day-by-day dev log project. Current progress: **Day 7 – Build a Minimal Frontend & Document the Project**
-
----
-
-## 📌 Features
-
-- ✅ Generate AI-powered interview questions
-- ✅ Store session history with PostgreSQL
-- ✅ Save answers, feedback, and scores
-- ✅ Retrieve past interactions by session
-- ✅ Pagination support for session logs
-- ✅ Minimal frontend UI: answer, feedback, session review
-- 🚧 User login/authentication (optional)
+> Built with **FastAPI**, **LLM (OpenAI)**, **PostgreSQL**, and **Vanilla JS** frontend.
 
 ---
 
-## 🧱 Tech Stack
+## 🔥 Features
 
-- **Backend**: FastAPI + SQLAlchemy + Databases (async)
-- **Database**: PostgreSQL (via Docker)
-- **Containerization**: Docker & Docker Compose
-- **Frontend**: HTML + JS (vanilla)
+### ✅ Interview Simulation
+- Get role-specific questions based on:
+  - Selected **Job Role**, **Years of Experience**, **Tech Stack**, and **Difficulty**.
+- Submit answers and receive:
+  - **AI-generated feedback**
+  - **Score**
+  - Follow-up questions
+
+### 🧑‍💻 User Authentication
+- Register, Login, and Logout (using cookies/session)
+- User state persists across pages
+- Authenticated users:
+  - Can view session history
+  - Get personalized advice
+
+### 📜 Session History
+- View all your previous interview sessions
+- Click a session to expand full details:
+  - Questions, answers, feedback, scores, and timestamps
+
+### 🧠 AI-Powered Improvement Advice
+- Users can request personalized advice after answering
+- Advice is structured, markdown-styled, and shows how to improve future answers
+
+### 🛠️ Persistent Context
+- After login, your **role**, **experience**, and **tech stack** are automatically filled
+- Sessions are linked to your account (via secure cookies)
+
+---
+
+## 🏗️ Tech Stack
+
+| Layer        | Tools                            |
+|--------------|----------------------------------|
+| Backend      | FastAPI, SQLAlchemy, PostgreSQL  |
+| LLM          | OpenAI GPT-4                     |
+| Frontend     | Vanilla JavaScript + HTML/CSS    |
+| Auth         | Cookie-based using fastapi-login |
+| Deployment   | Docker, Docker Compose           |
 
 ---
 
@@ -38,7 +61,7 @@ cd interview-simulator
 
 ### 2. Start backend + database using Docker Compose
 ```sh
-docker compose up --build
+docker compose up --build -d
 ```
 This will:
 * Start a PostgreSQL database (interview-db)
@@ -50,110 +73,57 @@ After services are up:
 docker compose exec backend python app/init_db.py
 ```
 ### Frontend UI
-Open the frontend by visiting:
-```sh
-cd frontend
-python3 -m http.server 8080
-```
-The minimal UI supports:
-* Selecting a topic and difficulty
-* Displaying the generated question
-* Submitting an answer and viewing AI feedback
+After starting the project (docker compose up --build), access the web interface via:
 
-📷 UI Preview:
-![Interview Simulator Logo](UI_preview_js.png)
-### 📡 API Endpoints
-`POST /interview/question`
-Generate a new interview question.
-```sh
-curl -X POST http://localhost:8000/interview/question \
-  -H "Content-Type: application/json" \
-  -d '{"topic": "Python", "difficulty": "medium"}'
-```
-Response:
-```json
-{
-  "question": "What is the difference between a list and a tuple in Python?",
-  "session_id": "abc123"
-}
-```
-`POST /interview/feedback`
-Submit your answer to the last question and receive AI feedback + score.
-```sh
-curl -X POST http://localhost:8000/interview/feedback \
-  -H "Content-Type: application/json" \
-  -d '{"session_id": "abc123", "answer": "Lists are mutable, tuples are not."}'
-  ```
-Response:
-```json
-{
-  "feedback": "Great answer! You correctly highlighted the mutability difference.",
-  "score": 8
-}
-```
-`GET /session/{session_id}`
-Retrieve full session history (questions, answers, feedback, scores). Supports pagination.
-```sh
-curl "http://localhost:8000/session/abc123?skip=0&limit=5"
-```
-Response:
-```json
-{
-  "session_id": "abc123",
-  "interactions": [
-    {
-      "question": "...",
-      "answer": "...",
-      "feedback": "...",
-      "score": 7,
-      "timestamp": "2025-06-03T10:30:45Z"
-    },
-    ...
-  ],
-  "pagination": {
-    "skip": 0,
-    "limit": 5,
-    "count": 5
-  }
-}
-```
-### 🧪 Development Setup (No Docker)
-If you prefer to run locally without Docker:
-Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate
-```
-Install dependencies:
-```bash
-pip install -r backend/requirements.txt
-```
-Start PostgreSQL locally (update .env if needed)
+🔐 Register: http://localhost:8000/static/register.html
 
-Run the app:
-```bash
-uvicorn app.main:app --reload
-```
+🔑 Login: http://localhost:8000/static/login.html
+
+🧠 Main App: http://localhost:8000/static/index.html
+
+The UI is built with vanilla HTML, CSS, and JavaScript, designed for clarity and responsiveness.
+
+### 📷 UI Preview:
+🔐 Register:
+<img src="images/250607_register.png" alt="Register Page" style="border: 2px solid black;"/>
+
+🔑 Login:
+<img src="images/250607_login.png" alt="Login Page" style="border: 2px solid black;"/>
+
+🧠 Main App:
+<img src="images/250607_UI_preview.png" alt="Interview Simulator UI Page" style="border: 2px solid black;"/>
+
 ### 📂 Project Structure
 ```bash
 interview_simulator/
-│
+├── docker-compose.yml             # Orchestrates backend + frontend
+├── Dockerfile                     # Backend Docker build
+├── README.md                      # Project documentation
+├── cookie.txt                     # Debugging cookie storage
+├── images/                        # UI screenshots
+│   ├── 250601_UI_preview.png
+│   └── 250607_UI_preview.png
+├── notes/                         # Development logs & planning
+├── frontend/                      # Static frontend files (served by backend)
+│   ├── index.html
+│   ├── login.html
+│   ├── register.html
+│   ├── styles.css
+│   └── app.js
 ├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI entrypoint
-│   │   ├── db.py                # DB connection setup
-│   │   ├── models.py            # SQLAlchemy models
-│   │   ├── utils.py             # Question & feedback logic
-│   │   ├── init_db.py           # Schema initializer
-│   └── requirements.txt
-├── frontend/
-│   ├── index.html
-│   └── app.js
-├── docker-compose.yml           # Backend + PostgreSQL services
-├── Dockerfile                   # FastAPI backend container
-├── .env                         # Environment variables
-└── README.md
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── frontend/                  # Mounted frontend folder (for serving static files)
+│   └── app/
+│       ├── main.py                # FastAPI app entry point
+│       ├── db.py, models.py       # DB config & schema
+│       ├── auth.py                # User authentication
+│       ├── init_db.py             # Database initializer script
+│       ├── services/              # Core business logic
+│       ├── routes/                # API route definitions
+│       └── utils.py               # Helper functions
 ```
+
 ### ✅ Day-by-Day Progress
 | Day  | Summary                                        |
 |------|-----------------------------------------------|
@@ -164,14 +134,24 @@ interview_simulator/
 | Day 5 | Add PostgreSQL + Docker Compose             |
 | Day 6 | Persist feedback & scores, enhance session logs |
 | Day 7 | Build minimal frontend |
+| Day 8	| Add user authentication with fastapi-login |
+| Day 9	| Implement login/register frontend, session history, and logout |
+| Day 10	| Improve interview prompt realism (role, experience, tech stack), show session details, provide improvement advice, and style UI with Bootstrap |
 
+### 🎯 Upcoming Features (Ideas)
+ * Visual analytics: performance over time
+ * Export sessions as PDF reports
+ * Explore methods to enhance both speed and precision to better align with user needs.
 
-### 🛠️ Roadmap
-* Add styled frontend or React version
-* User authentication (optional)
-* Topic-based scoring analytics
-* Export session history as PDF/CSV
-* Role-Specific Question Banks
+#### 🔥 Project-Based Interview Assessment
+- Users can provide details about their projects.
+- The AI will evaluate the user's understanding and contributions.
+- A scoring system will assess depth of knowledge and impact.
+
+#### 🔥 LeetCode-Style Practice
+- Role-specific coding challenges with adjustable difficulty.
+- Hint system offering **Hint 1**, **Hint 2**, **Hint 3**, an **Idea**, and the **Answer**.
+- AI-generated feedback on solutions with scoring and improvement suggestions.
 
 ### 🧑‍💻 Author
 Dinh Nguyen Duc

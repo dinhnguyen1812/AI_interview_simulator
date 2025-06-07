@@ -9,5 +9,6 @@ Login: http://localhost:8000/static/login.html
 Main: http://localhost:8000/static/index.html
 
 i think it lacks:
-- Styling
 - Button to delete the session history (start over)
+- Button to hide the advice
+- Add navbar

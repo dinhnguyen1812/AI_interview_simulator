@@ -9,12 +9,7 @@ async function startSession() {
   const res = await fetch("http://localhost:8000/interview/question", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      role,
-      experience,
-      tech_stack,
-      difficulty
-    })
+    body: JSON.stringify({ role, experience, tech_stack, difficulty })
   });
 
   const data = await res.json();
@@ -26,7 +21,11 @@ async function startSession() {
     <button onclick="submitAnswer()">Submit Answer</button>
   `;
 
-  // Reload session history immediately after new session starts
+  // Clear previous advice
+  const adviceBox = document.getElementById("advice-box");
+  if (adviceBox) adviceBox.innerHTML = "";
+
+  // Reload session history
   loadSessionHistory();
 }
 
@@ -40,10 +39,15 @@ async function submitAnswer() {
   });
 
   const data = await res.json();
+
   document.getElementById('session').innerHTML += `
     <p><strong>Feedback:</strong> ${data.feedback}</p>
     <p><strong>Score:</strong> ${data.score}</p>
   `;
+
+  // Clear old advice on new answer
+  const adviceBox = document.getElementById("advice-box");
+  if (adviceBox) adviceBox.innerHTML = "";
 }
 
 // Handle register form
@@ -125,13 +129,14 @@ async function showUserEmail() {
       userElem.style.borderRadius = "5px";
       document.body.appendChild(userElem);
     }
-    userElem.textContent = `Logged in as: ${data.email}`;
+    userElem.textContent = `${data.email}`;
 
     // Add logout button
     let logoutBtn = document.getElementById("logout-btn");
     if (!logoutBtn) {
       logoutBtn = document.createElement("button");
       logoutBtn.id = "logout-btn";
+      logoutBtn.className = "btn btn-outline-secondary btn-sm";  // 👈 add Bootstrap styling
       logoutBtn.textContent = "Logout";
       logoutBtn.style.marginLeft = "10px";
       logoutBtn.onclick = async () => {
@@ -258,6 +263,7 @@ async function getAdvice() {
     if (res.ok) {
       const adviceBox = document.getElementById("advice-box");
       adviceBox.innerHTML = formatAdvice(data.advice);
+      adviceBox.scrollIntoView({ behavior: "smooth" });
     } else {
       alert(data.detail || "Failed to get advice.");
     }
