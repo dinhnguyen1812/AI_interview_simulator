@@ -9,6 +9,5 @@ Login: http://localhost:8000/static/login.html
 Main: http://localhost:8000/static/index.html
 
 i think it lacks:
-- Role, experience, tech stack should be remained after an user logout and login
 - Styling
 - Button to delete the session history (start over)

@@ -2,8 +2,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey, Text
-from app.db import metadata
 from sqlalchemy.sql import func
+from app.db import metadata
 
 class InterviewRequest(BaseModel):
     role: str
@@ -55,4 +55,8 @@ users_table = Table(
     Column("id", Integer, primary_key=True),
     Column("email", String, unique=True, index=True),
     Column("password", String),
+    Column("role", String, nullable=True),
+    Column("experience", String, nullable=True),
+    Column("tech_stack", String, nullable=True),
 )
+

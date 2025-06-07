@@ -30,7 +30,6 @@ async function startSession() {
   loadSessionHistory();
 }
 
-
 async function submitAnswer() {
   const answer = document.getElementById('answer').value;
 
@@ -78,10 +77,18 @@ if (loginForm) {
     const res = await fetch("http://localhost:8000/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // <-- Important for cookie
+      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
+
+    const data = await res.json();
+
     if (res.ok) {
+      // ✅ Store values in localStorage
+      localStorage.setItem("user_role", data.role || "");
+      localStorage.setItem("user_experience", data.experience || "");
+      localStorage.setItem("user_tech_stack", data.tech_stack || "");
+
       // ✅ Redirect to homepage
       window.location.href = "/static/index.html";
     } else {
@@ -89,6 +96,7 @@ if (loginForm) {
     }
   });
 }
+
 
 // Show logged-in user email at top right if logged in
 async function showUserEmail() {

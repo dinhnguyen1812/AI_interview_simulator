@@ -1,8 +1,8 @@
+import os
 from fastapi_login import LoginManager
 from fastapi import HTTPException
 from app.models import users_table
 from app.db import database
-import os
 from dotenv import load_dotenv
 
 load_dotenv()

@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query, Depends, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.models import InterviewRequest, FeedbackRequest, AdviceRequest
 from app.models import interactions_table, sessions_table, users_table
 from app.auth import manager
@@ -12,7 +14,7 @@ from app.utils import (
     generate_advice
 )
 from app.db import database
-from fastapi.middleware.cors import CORSMiddleware
+
 from passlib.hash import bcrypt
 from pydantic import BaseModel
 
@@ -44,6 +46,17 @@ async def get_question(req: InterviewRequest, user=Depends(manager)):
     # Create session if not exists
     if not req.session_id:
         await create_session(session_id, user.email)
+
+        # Update user profile with the latest role, experience, tech_stack
+        await database.execute(
+            users_table.update()
+            .where(users_table.c.email == user.email)
+            .values(
+                role=req.role,
+                experience=req.experience,
+                tech_stack=req.tech_stack
+            )
+        )
 
     # Get last answer if any
     query = interactions_table.select().where(
@@ -157,12 +170,19 @@ async def register(user: UserIn):
 async def login(response: Response, user: UserIn):
     query = users_table.select().where(users_table.c.email == user.email)
     db_user = await database.fetch_one(query)
+    
     if not db_user or not bcrypt.verify(user.password, db_user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     token = manager.create_access_token(data={"sub": user.email})
     manager.set_cookie(response, token)
-    return {"msg": "Login successful"}
+
+    return {
+        "msg": "Login successful",
+        "role": db_user["role"],
+        "experience": db_user["experience"],
+        "tech_stack": db_user["tech_stack"],
+    }
 
 # Logout endpoint — clear the cookie
 @app.post("/auth/logout")

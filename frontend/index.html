@@ -73,5 +73,27 @@
   </div>
 
   <script src="app.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const role = localStorage.getItem("user_role");
+      const experience = localStorage.getItem("user_experience");
+      const techStack = localStorage.getItem("user_tech_stack");
+
+      if (role) document.getElementById("role").value = role;
+      if (experience) document.getElementById("experience").value = experience;
+      if (techStack) document.getElementById("tech_stack").value = techStack;
+    });
+  </script>
+  <script>
+    function persistUserSettings() {
+      localStorage.setItem("user_role", document.getElementById("role").value);
+      localStorage.setItem("user_experience", document.getElementById("experience").value);
+      localStorage.setItem("user_tech_stack", document.getElementById("tech_stack").value);
+    }
+
+    ["role", "experience", "tech_stack"].forEach((id) => {
+      document.getElementById(id).addEventListener("change", persistUserSettings);
+    });
+  </script>
 </body>
 </html>
