@@ -236,3 +236,40 @@ async function loadSessionDetail(sessionId) {
     console.error("Error loading session detail:", err);
   }
 }
+
+async function getAdvice() {
+  try {
+    const res = await fetch("/interview/advice", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      const adviceBox = document.getElementById("advice-box");
+      adviceBox.innerHTML = formatAdvice(data.advice);
+    } else {
+      alert(data.detail || "Failed to get advice.");
+    }
+  } catch (error) {
+    console.error("Error fetching advice:", error);
+  }
+}
+
+// Format the plain text advice into structured HTML
+function formatAdvice(text) {
+  // Convert markdown-style bold **text** to HTML <strong>text</strong>
+  let html = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+  // Optional: turn newlines into <br> if desired (only for better formatting)
+  html = html.replace(/\n/g, "<br>");
+
+  // Wrap in styled HTML
+  return `
+    <h3>Improvement Advice</h3>
+    <div style="line-height: 1.6;">${html}</div>
+  `;
+}
+

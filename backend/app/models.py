@@ -27,6 +27,9 @@ class FeedbackRequest(BaseModel):
     session_id: str
     answer: str
 
+class AdviceRequest(BaseModel):
+    session_id: str
+
 sessions_table = Table(
     "sessions",
     metadata,

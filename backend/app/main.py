@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query, Depends, Response
 from fastapi.staticfiles import StaticFiles
-from app.models import InterviewRequest, FeedbackRequest
+from app.models import InterviewRequest, FeedbackRequest, AdviceRequest
 from app.models import interactions_table, sessions_table, users_table
 from app.auth import manager
 from app.utils import (
@@ -8,7 +8,8 @@ from app.utils import (
     generate_session_id,
     log_interaction,
     generate_feedback,
-    create_session
+    create_session,
+    generate_advice
 )
 from app.db import database
 from fastapi.middleware.cors import CORSMiddleware
@@ -190,3 +191,28 @@ async def get_session_history(user=Depends(manager)):
             "created_at": s["created_at"].isoformat() if s["created_at"] else None  # include timestamp
         })
     return {"sessions": result}
+
+@app.post("/interview/advice")
+async def give_advice(user=Depends(manager)):
+    # Fetch all session IDs for this user
+    session_query = sessions_table.select().where(sessions_table.c.user_email == user.email)
+    sessions = await database.fetch_all(session_query)
+    session_ids = [s["id"] for s in sessions]
+
+    if not session_ids:
+        raise HTTPException(status_code=404, detail="No sessions found for this user.")
+
+    # Fetch all interactions tied to those sessions
+    interaction_query = interactions_table.select().where(
+        interactions_table.c.session_id.in_(session_ids)
+    ).order_by(interactions_table.c.timestamp.asc())
+    interactions = await database.fetch_all(interaction_query)
+
+    if not interactions:
+        raise HTTPException(status_code=404, detail="No interactions found.")
+
+    # Use the utility function
+    advice = await generate_advice(interactions)
+
+    return {"advice": advice}
+

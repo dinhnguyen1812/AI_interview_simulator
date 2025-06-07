@@ -117,3 +117,45 @@ async def log_interaction(session_id: str, question: str, answer: str = None):
         timestamp=datetime.utcnow()
     )
     await database.execute(query)
+
+async def generate_advice(interactions: list[dict]) -> str:
+    from openai import OpenAI
+    client = OpenAI()
+
+    if not interactions:
+        return "No interaction history available for advice."
+
+    # Format history into text
+    history_text = ""
+    for i in interactions:
+        history_text += (
+            f"\nQuestion: {i['question']}\n"
+            f"Answer: {i['answer'] or '(no answer)'}\n"
+            f"Feedback: {i['feedback'] or '(no feedback)'}\n"
+        )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a professional technical interview coach. "
+                        "Analyze the candidate’s interview history and give short advice about each of their weaknesses "
+                        "and how they can improve for their target role."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Here is the candidate’s interview history:\n{history_text}\n\n"
+                        "Based on this, what are their weaknesses and how can they improve?"
+                    )
+                }
+            ]
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error generating advice: {e}"
+
