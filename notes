@@ -8,8 +8,7 @@ Register: http://localhost:8000/static/register.html
 Login: http://localhost:8000/static/login.html
 Main: http://localhost:8000/static/index.html
 
-i think it lacks:
-- Styling **Question** and **Follow up** (anything with double *) in content of Question. If there is **Question**, remove the part before it.
+Tasks:
 - Create user skill table to save 
   - Scale: 0-10, start at 0
   - Need to determine categories (fixed or flexible for each role)
@@ -22,6 +21,7 @@ i think it lacks:
 - Give questions based on the user skill score
 
 - Model selection (chat gpt 3.5, 4, ...)
+- Styling **Question** and **Follow up** (anything with double *) in content of Question. If there is **Question**, remove the part before it.
 
 - Button to delete the session history (start over)
 - Button to hide the advice

@@ -31,7 +31,8 @@ async def generate_interview_question(
     experience: str,
     tech_stack: str,
     difficulty: str,
-    last_answer: str = None
+    last_answer: str = None,
+    model: str = "gpt-3.5-turbo"
 ) -> str:
     try:
         messages = [
@@ -63,7 +64,7 @@ async def generate_interview_question(
             })
 
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model=model,
             messages=messages
         )
 
@@ -71,10 +72,10 @@ async def generate_interview_question(
     except Exception as e:
         return f"Error generating question: {e}"
 
-def generate_feedback(question: str, answer: str) -> tuple[str, int]:
+def generate_feedback(question: str, answer: str, model: str = "gpt-3.5-turbo") -> tuple[str, int]:
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model=model,
             messages=[
                 {
                     "role": "system",
@@ -92,12 +93,10 @@ def generate_feedback(question: str, answer: str) -> tuple[str, int]:
             ]
         )
         content = response.choices[0].message.content.strip()
-        
-        # Extract feedback
+
         feedback_match = re.search(r"Feedback:\s*(.*)", content, re.IGNORECASE)
         feedback = feedback_match.group(1).strip() if feedback_match else "No feedback found."
 
-        # Extract score (first number after "Score:")
         score_match = re.search(r"Score:\s*(\d+)", content, re.IGNORECASE)
         score = int(score_match.group(1)) if score_match else 0
 
@@ -124,14 +123,13 @@ async def log_interaction(session_id: str, question: str, answer: str = None):
     )
     await database.execute(query)
 
-async def generate_advice(interactions: list[dict]) -> str:
+async def generate_advice(interactions: list[dict], model: str = "gpt-3.5-turbo") -> str:
     from openai import OpenAI
     client = OpenAI()
 
     if not interactions:
         return "No interaction history available for advice."
 
-    # Format history into text
     history_text = ""
     for i in interactions:
         history_text += (
@@ -142,7 +140,7 @@ async def generate_advice(interactions: list[dict]) -> str:
 
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model=model,
             messages=[
                 {
                     "role": "system",

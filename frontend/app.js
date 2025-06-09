@@ -5,25 +5,26 @@ async function startSession() {
   const experience = document.getElementById("experience").value;
   const tech_stack = document.getElementById("tech_stack").value;
   const difficulty = document.getElementById("difficulty").value;
+  const model = document.getElementById("model").value;
 
   const res = await fetch("http://localhost:8000/interview/question", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ role, experience, tech_stack, difficulty })
+    body: JSON.stringify({ role, experience, tech_stack, difficulty, model })
   });
 
   const data = await res.json();
   sessionId = data.session_id;
 
-document.getElementById("session").innerHTML = `
-  <div class="card p-4 mb-4 shadow-sm">
-    <p><strong>Question:</strong> ${data.question}</p>
-    <div class="mb-3">
-      <textarea id="answer" class="form-control" rows="4" placeholder="Your answer here..."></textarea>
+  document.getElementById("session").innerHTML = `
+    <div class="card p-4 mb-4 shadow-sm">
+      <p><strong>Question:</strong> ${data.question}</p>
+      <div class="mb-3">
+        <textarea id="answer" class="form-control" rows="4" placeholder="Your answer here..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="submitAnswer()">Submit Answer</button>
     </div>
-    <button class="btn btn-primary" onclick="submitAnswer()">Submit Answer</button>
-  </div>
-`;
+  `;
 
   // Clear previous advice
   const adviceBox = document.getElementById("advice-box");
