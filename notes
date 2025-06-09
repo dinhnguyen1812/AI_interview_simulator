@@ -9,10 +9,6 @@ Login: http://localhost:8000/static/login.html
 Main: http://localhost:8000/static/index.html
 
 i think it lacks:
-- Fix box for session history
-- Fix time to Japan region
-- Add register button to login page
-- Restyling "Submit answer" button
 - Styling **Question** and **Follow up** (anything with double *) in content of Question. If there is **Question**, remove the part before it.
 - Create user skill table to save 
   - Scale: 0-10, start at 0

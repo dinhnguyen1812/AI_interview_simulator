@@ -15,11 +15,15 @@ async function startSession() {
   const data = await res.json();
   sessionId = data.session_id;
 
-  document.getElementById("session").innerHTML = `
+document.getElementById("session").innerHTML = `
+  <div class="card p-4 mb-4 shadow-sm">
     <p><strong>Question:</strong> ${data.question}</p>
-    <textarea id="answer" rows="4" cols="60" placeholder="Your answer here..."></textarea><br />
-    <button onclick="submitAnswer()">Submit Answer</button>
-  `;
+    <div class="mb-3">
+      <textarea id="answer" class="form-control" rows="4" placeholder="Your answer here..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="submitAnswer()">Submit Answer</button>
+  </div>
+`;
 
   // Clear previous advice
   const adviceBox = document.getElementById("advice-box");
