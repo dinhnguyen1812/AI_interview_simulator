@@ -26,9 +26,17 @@ async function startSession() {
     </div>
   `;
 
-  // Clear previous advice
+  // Clear and reset advice section
+  adviceFetched = false;
   const adviceBox = document.getElementById("advice-box");
-  if (adviceBox) adviceBox.innerHTML = "";
+  const toggleBtn = document.getElementById("advice-toggle-btn");
+  if (adviceBox) {
+    adviceBox.innerHTML = "";
+    adviceBox.style.display = "none";
+  }
+  if (toggleBtn) {
+    toggleBtn.textContent = "Get Advice";
+  }
 
   // Reload session history
   loadSessionHistory();
@@ -255,25 +263,41 @@ async function loadSessionDetail(sessionId) {
   }
 }
 
-async function getAdvice() {
-  try {
-    const res = await fetch("/interview/advice", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
+let adviceFetched = false;
+async function handleAdviceToggle() {
+  const adviceBox = document.getElementById("advice-box");
+  const toggleBtn = document.getElementById("advice-toggle-btn");
 
-    const data = await res.json();
+  if (!adviceFetched) {
+    try {
+      const res = await fetch("/interview/advice", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
 
-    if (res.ok) {
-      const adviceBox = document.getElementById("advice-box");
-      adviceBox.innerHTML = formatAdvice(data.advice);
-      adviceBox.scrollIntoView({ behavior: "smooth" });
-    } else {
-      alert(data.detail || "Failed to get advice.");
+      const data = await res.json();
+
+      if (res.ok) {
+        adviceBox.innerHTML = formatAdvice(data.advice);
+        adviceBox.style.display = "block";
+        adviceFetched = true;
+        toggleBtn.textContent = "Hide Advice";
+        adviceBox.scrollIntoView({ behavior: "smooth" });
+      } else {
+        alert(data.detail || "Failed to get advice.");
+      }
+    } catch (error) {
+      console.error("Error fetching advice:", error);
     }
-  } catch (error) {
-    console.error("Error fetching advice:", error);
+  } else {
+    if (adviceBox.style.display === "none") {
+      adviceBox.style.display = "block";
+      toggleBtn.textContent = "Hide Advice";
+    } else {
+      adviceBox.style.display = "none";
+      toggleBtn.textContent = "Show Advice";
+    }
   }
 }
 

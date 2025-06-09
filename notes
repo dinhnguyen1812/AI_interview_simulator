@@ -20,7 +20,6 @@ Tasks:
 - Give advice based on the user skill score
 - Give questions based on the user skill score
 
-- Model selection (chat gpt 3.5, 4, ...)
 - Styling **Question** and **Follow up** (anything with double *) in content of Question. If there is **Question**, remove the part before it.
 
 - Button to delete the session history (start over)
