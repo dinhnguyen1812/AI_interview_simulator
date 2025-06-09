@@ -35,7 +35,7 @@ sessions_table = Table(
     metadata,
     Column("id", String, primary_key=True),
     Column("user_email", String, ForeignKey("users.email")),
-    Column("created_at", DateTime, server_default=func.now()),
+    Column("created_at", DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")))
 )
 
 interactions_table = Table(
@@ -47,7 +47,7 @@ interactions_table = Table(
     Column("answer", Text),
     Column("feedback", Text),
     Column("score", Integer),
-    Column("timestamp", DateTime, default=datetime.utcnow),
+    Column("timestamp", DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")))
 )
 
 users_table = Table(

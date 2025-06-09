@@ -1,7 +1,7 @@
 ** 250606: For Day 9 - 1:
 Register: http://localhost:8080/register.html
 Login: http://localhost:8080/login.html
-Main: http://localhost:8080
+Main: http://localhost:8080/
 
 ** 250606: For Day 9 - 2:
 Register: http://localhost:8000/static/register.html
@@ -9,6 +9,24 @@ Login: http://localhost:8000/static/login.html
 Main: http://localhost:8000/static/index.html
 
 i think it lacks:
+- Fix box for session history
+- Fix time to Japan region
+- Add register button to login page
+- Restyling "Submit answer" button
+- Styling **Question** and **Follow up** (anything with double *) in content of Question. If there is **Question**, remove the part before it.
+- Create user skill table to save 
+  - Scale: 0-10, start at 0
+  - Need to determine categories (fixed or flexible for each role)
+  - Need table to track progress of score for each category
+  - After each question and response, add new scores to the track table (the newest scores need to be based on the last scores too)
+- Evaluate user skills using the current skill score + the last answer
+- Add radar chart for current scores
+- Add score progress graph
+- Give advice based on the user skill score
+- Give questions based on the user skill score
+
+- Model selection (chat gpt 3.5, 4, ...)
+
 - Button to delete the session history (start over)
 - Button to hide the advice
 - Add navbar

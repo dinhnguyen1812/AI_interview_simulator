@@ -183,7 +183,7 @@ async function loadSessionHistory() {
       return;
     }
 
-    container.innerHTML = "<h3>Your Previous Sessions</h3>";
+    container.innerHTML = "";
     const list = document.createElement("ul");
     data.sessions.forEach(session => {
       const li = document.createElement("li");

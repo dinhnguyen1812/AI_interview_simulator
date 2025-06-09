@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     input::placeholder, textarea::placeholder {
-      color: #aaa;
+      color: #dad8d8;
       opacity: 1;
     }
     textarea {
@@ -65,7 +65,7 @@
           </select>
         </div>
 
-        <button onclick="startSession()" class="btn btn-primary mt-2 me-2">Start</button>
+        <button onclick="startSession()" class="btn btn-primary mt-2 me-2">Question</button>
         <button onclick="getAdvice()" class="btn btn-secondary mt-2">Get Advice</button>
       </div>
 
@@ -78,6 +78,7 @@
 
     <!-- Right Panel -->
     <div class="col-md-4 border-start ps-4">
+      <h3>Your Previous Sessions</h3>
       <ul id="session-history" class="list-unstyled"></ul>
     </div>
   </div>

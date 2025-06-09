@@ -9,9 +9,14 @@
 }
 
 #session-history {
-  flex: 1;
-  border-left: 1px solid #ccc;
-  padding-left: 20px;
+  display: flex;
+  flex-direction: column-reverse; /* Makes new items appear at the top */
+  border: 1px solid #ccc;         /* Visual box border */
+  padding: 20px;
+  max-height: 30vh;
+  overflow-y: auto;
+  background-color: #f8f9fa;      /* Light background for visibility */
+  border-radius: 5px;             /* Optional: rounded corners */
 }
 
 .auth-container {
