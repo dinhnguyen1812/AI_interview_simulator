@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
-from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey, Text
+from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey, Text, UniqueConstraint, Float
 from sqlalchemy.sql import func
 from app.db import metadata
 
@@ -60,3 +60,25 @@ users_table = Table(
     Column("tech_stack", String, nullable=True),
 )
 
+# Table for “latest” skill scores for quick access
+user_skills_table = Table(
+    "user_skills",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("user_email", String, ForeignKey("users.email")),
+    Column("skill_name", String),
+    Column("score", Float),
+    Column("updated_at", DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("Asia/Tokyo"))),
+    UniqueConstraint("user_email", "skill_name", name="user_skill_uc")
+)
+
+# Table for skill scores for keeping track of users progress
+user_skill_history_table = Table(
+    "user_skill_history",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("user_email", String, ForeignKey("users.email")),
+    Column("skill_name", String),
+    Column("score", Float),
+    Column("timestamp", DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("Asia/Tokyo"))),
+)

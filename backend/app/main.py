@@ -1,20 +1,30 @@
 from fastapi import FastAPI, HTTPException, Query, Depends, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.models import InterviewRequest, FeedbackRequest, AdviceRequest
-from app.models import interactions_table, sessions_table, users_table
+from app.models import (
+    interactions_table, 
+    sessions_table, 
+    users_table, 
+    user_skills_table, 
+    user_skill_history_table
+)
 from app.auth import manager
+from app.constants import skills
 from app.utils import (
     generate_interview_question,
     generate_session_id,
     log_interaction,
     generate_feedback,
     create_session,
-    generate_advice
+    generate_advice,
+    extract_skill_scores
 )
 from app.db import database
 
+from datetime import datetime
 from passlib.hash import bcrypt
 from pydantic import BaseModel
 
@@ -142,7 +152,54 @@ async def give_feedback(req: FeedbackRequest, user=Depends(manager)):
     )
     await database.execute(update_query)
 
-    return {"feedback": feedback, "score": score}
+    # Fetch previous skill scores for this user
+    # Assuming you have user email available (e.g. via token)
+    prev_scores_query = user_skills_table.select().where(
+        user_skills_table.c.user_email == user.email
+    )
+    rows = await database.fetch_all(prev_scores_query)
+    last_skill_scores = {row['skill_name']: row['score'] for row in rows} if rows else {}
+    # Initialize missing skills with 0
+    for skill in skills:
+        last_skill_scores.setdefault(skill, 0.0)
+
+    # Extract updated skill scores
+    updated_skill_scores = await extract_skill_scores(req.answer, last_skill_scores)
+
+    # Upsert updated skill scores into DB
+    for skill, new_score in updated_skill_scores.items():
+        now = datetime.utcnow()
+
+        # 1. Insert into history
+        await database.execute(
+            user_skill_history_table.insert().values(
+                user_email=user.email,
+                skill_name=skill,
+                score=new_score,
+                timestamp=now
+            )
+        )
+
+        # 2. Upsert current skill snapshot
+        stmt = pg_insert(user_skills_table).values(
+            user_email=user.email,
+            skill_name=skill,
+            score=new_score,
+            updated_at=now
+        ).on_conflict_do_update(
+            index_elements=["user_email", "skill_name"],
+            set_={
+                "score": new_score,
+                "updated_at": now
+            }
+        )
+        await database.execute(stmt)
+
+    return {
+        "feedback": feedback,
+        "score": score,
+        "skills": updated_skill_scores
+    }
 
 @app.on_event("startup")
 async def startup():

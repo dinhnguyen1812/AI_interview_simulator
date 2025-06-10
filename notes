@@ -15,13 +15,19 @@ Tasks:
   - Need table to track progress of score for each category
   - After each question and response, add new scores to the track table (the newest scores need to be based on the last scores too)
 - Evaluate user skills using the current skill score + the last answer
+
 - Add radar chart for current scores
 - Add score progress graph
+
 - Give advice based on the user skill score
+
 - Give questions based on the user skill score
+
+- After logining for the first time, users have to self evaluate their skills before redirected to the main page.
+
+- Fix time from utcnow to Tokyo timezone
 
 - Styling **Question** and **Follow up** (anything with double *) in content of Question. If there is **Question**, remove the part before it.
 
 - Button to delete the session history (start over)
-- Button to hide the advice
 - Add navbar

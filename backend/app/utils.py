@@ -2,9 +2,11 @@ from openai import OpenAI
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from app.models import SessionData, Interaction, sessions_table, interactions_table
-import uuid
 from app.db import database
+from app.constants import skills
 from typing import Optional
+import json
+import uuid
 
 import re
 
@@ -163,3 +165,55 @@ async def generate_advice(interactions: list[dict], model: str = "gpt-3.5-turbo"
     except Exception as e:
         return f"Error generating advice: {e}"
 
+async def extract_skill_scores(
+    answer: str,
+    last_skill_scores: dict[str, float],
+    model: str = "gpt-4o-mini"
+) -> dict[str, float]:
+    """
+    Use the OpenAI API to extract scores for each skill based on the given answer
+    and previous skill scores.
+    Returns a dict of skill_name -> updated score (0 to 10).
+    """
+    last_scores_json = json.dumps(last_skill_scores)
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are a technical interview evaluator. "
+                "Given the candidate's answer and their previous skill scores (0-10), "
+                "evaluate and update the scores for each of the following skills:\n" +
+                "\n".join(f"- {skill}" for skill in skills) +
+                "\nScores should be between 0 and 10."
+            )
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Candidate answer:\n{answer}\n\n"
+                f"Previous skill scores:\n{last_scores_json}\n\n"
+                "Please provide updated skill scores in JSON format as "
+                "{skill_name: score, ...} with numeric scores."
+            )
+        }
+    ]
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=0
+    )
+    content = response.choices[0].message.content.strip()
+
+    # Parse JSON safely
+    try:
+        updated_scores = json.loads(content)
+        # Validate keys and score ranges
+        updated_scores = {
+            k: max(0, min(10, float(v))) for k, v in updated_scores.items() if k in skills
+        }
+        return updated_scores
+    except Exception as e:
+        # fallback to last scores if parse error
+        return last_skill_scores
